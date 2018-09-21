@@ -118,7 +118,23 @@ public class Num implements Comparable<Num> {
   // compare "this" to "other": return +1 if this is greater, 0 if equal, -1
   // otherwise
   public int compareTo(Num other) {
-    return 0;
+    if (this.base() != other.base()) {
+      throw new ArithmeticException();
+    }
+    
+    if (this.len > other.len) return 1;
+
+    if (this.len < other.len) return -1;
+    
+    // compare from last index
+    int pos = this.len - 1;
+    
+    while (pos >= 0 && this.arr[pos] == other.arr[pos]) {
+      pos--;
+    }
+    
+    if (pos == 0) return 0;
+    return this.arr[pos] > other.arr[pos] ? 1 : -1;
   }
 
   // Output using the format "base: elements of list ..."
@@ -129,6 +145,7 @@ public class Num implements Comparable<Num> {
     for (int i = 0, len = arr.length; i < len; i++) {
       System.out.print(arr[i] + " ");
     }
+    System.out.println();
   }
 
   // Return number to a string in base 10
