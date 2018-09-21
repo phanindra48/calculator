@@ -133,7 +133,7 @@ public class Num implements Comparable<Num> {
 
   // Return number to a string in base 10
   public String toString() {
-    return null;
+    return arrayToString(this.arr, this.base);
   }
 
   public long base() {
@@ -165,12 +165,10 @@ public class Num implements Comparable<Num> {
   }
 
   public static void main(String[] args) {
-    Num x = new Num(999);
-    Num y = new Num("8");
+    Num x = new Num(9922349);
+    Num y = new Num("9134508");
     Num z = Num.add(x, y);
-    System.out.println(z);
-    Num a = Num.power(x, 8);
-    System.out.println(a);
+    System.out.println("toString()" + z.toString());
     if (z != null)
       z.printList();
   }
