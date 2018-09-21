@@ -42,8 +42,48 @@ public class Num implements Comparable<Num> {
     return baseSize;
   }
 
+  private static String arrayToString(long[] arr, long base) {
+    if (arr.length == 0)
+      return null;
+    StringBuilder str = new StringBuilder();
+    int baseSize = baseSize(base);
+
+    for (int i = 0, len = arr.length; i < len; i++) {
+      str.insert(0, String.format("%0" + baseSize + "d", arr[i]));
+    }
+
+    return str.toString().replaceFirst("^0+(?!$)", "");
+  }
+
   public static Num add(Num a, Num b) {
-    return null;
+    int carryOver = 0;
+    if (a.base != b.base) {
+      System.out.println("Base of two numbers are not same");
+      return null;
+    }
+    int aLen = a.len;
+    int bLen = b.len;
+
+    int base = (int) a.base;
+
+    if (aLen == 0)
+      return b;
+    if (bLen == 0)
+      return a;
+
+    int arrLen = Math.max(a.len, b.len) + 1;
+    long[] arr = new long[arrLen];
+    for (int i = 0; i < arrLen; i++) {
+      int sum = carryOver;
+      if (i < aLen)
+        sum += a.arr[i];
+      if (i < bLen)
+        sum += b.arr[i];
+
+      carryOver = sum / base;
+      arr[i] = sum % base;
+    }
+    return new Num(arrayToString(arr, base));
   }
 
   public static Num subtract(Num a, Num b) {
