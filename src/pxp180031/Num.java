@@ -16,13 +16,12 @@ public class Num implements Comparable<Num> {
   public Num(String s) {
     int strLen = s.length();
     int index = strLen;
-    int count = 0; // totalChunks - 1;
+    int count = 0;
     int baseSize = baseSize(base);
     int totalChunks = (int) Math.ceil(strLen * 1.0 / baseSize);
     arr = new long[totalChunks];
     len = totalChunks;
-    // System.out.println(count + " " + baseSize + " " + index + " " + totalChunks +
-    // " " + len + " " + strLen);
+    // System.out.println(count + " " + baseSize + " " + index + " " + totalChunks + " " + len + " " + strLen);
     System.out.println(s);
     while (count < totalChunks) {
       int start = index / baseSize > 0 ? (index - baseSize) : 0;
@@ -133,7 +132,9 @@ public class Num implements Comparable<Num> {
       pos--;
     }
     
-    if (pos == 0) return 0;
+    // if both are same till end return 0
+    if (pos == -1) return 0;
+
     return this.arr[pos] > other.arr[pos] ? 1 : -1;
   }
 
