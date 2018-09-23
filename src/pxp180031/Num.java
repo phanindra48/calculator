@@ -17,7 +17,8 @@ public class Num implements Comparable<Num> {
   private static final Num ONE = new Num(1);
   private static final Num ZERO = new Num(0);
 
-  public Num(String s) {
+  public Num(String s, long base) {
+    this.base = base;
     int strLen = s.length();
     int index = strLen;
     int count = 0;
@@ -29,6 +30,7 @@ public class Num implements Comparable<Num> {
     // System.out.println(count + " " + baseSize + " " + index + " " + totalChunks + " " + len + " " + strLen);
     System.out.println(s);
     // TODO: Need to handle negative signs in input strings
+    // TODO: Handle bases that are not multiples of 10
     while (count < totalChunks) {
       int start = index / baseSize > 0 ? (index - baseSize) : 0;
       int end = index;
@@ -37,8 +39,24 @@ public class Num implements Comparable<Num> {
     }
   }
 
+  public Num(String s) {
+    this(s, defaultBase);
+  }
+
   public Num(long x) {
-    this(String.valueOf(x));
+    this(String.valueOf(x), defaultBase);
+  }
+
+  /**
+   * Create Num object if we get array of long objects
+   * Assumption - all elems in array are of give base
+   * * For internal use
+   * @param arr
+   * @param base
+   */
+  private Num(long[] arr, long base) {
+    this.arr = arr;
+    this.base = base;
   }
 
   private static int baseSize(long base) {
@@ -96,8 +114,9 @@ public class Num implements Comparable<Num> {
       carryOver = sum / base;
       arr[i] = sum % base;
     }
-
-    return new Num(arrayToString(arr, base));
+    Num result = new Num(arr, base);
+    result.len = carryOver > 0 ? a.len + 1 : a.len;
+    return result;
   }
 
   public static Num add(Num a, Num b) {
@@ -127,7 +146,6 @@ public class Num implements Comparable<Num> {
    */
   private static Num unsignedSubtract(Num a, Num b) {
     int borrow = 0;
-    boolean isNegative = false;
     if (a.base() != b.base()) {
       System.out.println("Base of two numbers are not same");
       return null;
@@ -181,8 +199,11 @@ public class Num implements Comparable<Num> {
 
       arr[i] = sub;
     }
+    Num result = new Num(arr, base);
 
-    return new Num(arrayToString(arr, base));
+    // if last elem is zero, reduce the length by 1
+    result.len = arr[a.len - 1] == 0 ? a.len - 1 : a.len;
+    return result;
   }
 
   public static Num subtract(Num a, Num b) {
@@ -302,7 +323,7 @@ public class Num implements Comparable<Num> {
   // then the output is "100: 65 9 1"
   public void printList() {
     System.out.print(base + ": ");
-    for (int i = 0, len = arr.length; i < len; i++) {
+    for (int i = 0, len = this.len; i < len; i++) {
       System.out.print(arr[i] + " ");
     }
     System.out.println();
@@ -342,11 +363,39 @@ public class Num implements Comparable<Num> {
   }
 
   public static void main(String[] args) {
-    Num x = new Num(9922349);
-    Num y = new Num("9134508");
-    Num z = Num.add(x, y);
-    System.out.println("toString()" + z.toString());
-    if (z != null)
+    Num x = new Num(40772);
+    Num y = new Num("896");
+    x.printList();
+    y.printList();
+    Num z = Num.subtract(x, y);
+    if (z != null) {
+      System.out.print("Subtraction result: ");
       z.printList();
+      System.out.println(z.toString());
+    }
+
+    x = new Num(30);
+    y = new Num("120");
+    z = Num.subtract(x, y);
+    if (z != null) {
+      System.out.print("Subtraction result: ");
+      z.printList();
+      System.out.println(z.toString());
+    }
+
+    z = Num.add(x, y);
+    if (z != null) {
+      System.out.print("Addition result: ");
+      z.printList();
+      System.out.println(z.toString());
+    }
+
+    z = Num.product(x, 30);
+    if (z != null) {
+      System.out.print("Product(Num, long) result: ");
+      z.printList();
+      System.out.println(z.toString());
+    }
+    System.out.println("compareTo x,y " + x.compareTo(y));
   }
 }
