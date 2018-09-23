@@ -56,6 +56,7 @@ public class Num implements Comparable<Num> {
    */
   private Num(long[] arr, long base) {
     this.arr = arr;
+    this.len = arr.length;
     this.base = base;
   }
 
@@ -65,6 +66,12 @@ public class Num implements Comparable<Num> {
     return baseSize;
   }
 
+  /**
+   * TODO: See if this can be removed!
+   * @param arr
+   * @param base
+   * @return
+   */
   private static String arrayToString(long[] arr, long base) {
     if (arr.length == 0)
       return null;
@@ -87,15 +94,13 @@ public class Num implements Comparable<Num> {
    * @return Num
    */
   private static Num unsignedAdd(Num a, Num b) {
-    int carryOver = 0;
+    long carryOver = 0;
     if (a.base != b.base) {
       System.out.println("Base of two numbers are not same");
       return null;
     }
     int aLen = a.len;
     int bLen = b.len;
-
-    int base = (int) a.base;
 
     if (aLen == 0)
       return b;
@@ -105,17 +110,18 @@ public class Num implements Comparable<Num> {
     int arrLen = Math.max(a.len, b.len) + 1;
     long[] arr = new long[arrLen];
     for (int i = 0; i < arrLen; i++) {
-      int sum = carryOver;
+      long sum = carryOver;
       if (i < aLen)
         sum += a.arr[i];
       if (i < bLen)
         sum += b.arr[i];
 
-      carryOver = sum / base;
-      arr[i] = sum % base;
+      carryOver = sum / a.base;
+      arr[i] = sum % a.base;
     }
-    Num result = new Num(arr, base);
-    result.len = carryOver > 0 ? a.len + 1 : a.len;
+
+    Num result = new Num(arr, a.base);
+    result.len = arr[arrLen - 1] > 0 ? arrLen : arrLen - 1;
     return result;
   }
 
@@ -228,31 +234,135 @@ public class Num implements Comparable<Num> {
   }
 
   /**
+   * Utility function for karatsuba multiplication method
+   * Assumption - Num and long are in same base
+   * @param a
+   * @param b
+   * @return
+   */
+  private static Num product(Num a, long b) {
+    if (b == 0) return ZERO;
+
+    if (b == 1) return a;
+
+    if (a.len == 0) return a;
+
+    int count = 0;
+    
+    long carryOver = 0;
+    long[] arr = new long[a.len + 1];
+    while (count < a.len) {
+      long sum = a.arr[count] * b + carryOver;
+      arr[count] = sum % a.base;
+      carryOver = sum / a.base;
+      count++;
+    }
+    if (carryOver > 0) arr[count] = carryOver;
+    Num result = new Num(arr, a.base);
+    result.isNegative = a.isNegative;
+    result.len = carryOver > 0 ? a.len + 1 : a.len;
+    return result;
+  }
+
+  public static Num product(Num a, Num b) {
+    if (a.base != b.base) {
+      throw new ArithmeticException();  
+    }
+    Num result = karatsuba(a, b);
+    result.isNegative = a.isNegative ^ b.isNegative;
+    return result;
+  }
+
+  /**
+   * Utility function for karatsuba multiplication method
+   * @param a
+   * @param index
+   * @param length
+   * @return
+   */
+  private static Num splitter(Num a, int index, int length) {
+    long[] arr = new long[length];
+    for (int i = 0; i < length; i++) {
+      arr[i] = a.arr[i + index];
+    }
+    return new Num(arr, a.base);
+  }
+
+  /**
+   * Utility function for karatsuba multiplication method
+   * Desc - Shifts numbers by k digits to right
+   * @param a
+   * @param length
+   * @return
+   */
+  private static Num shift(Num a, int length) {
+    return null;
+  }
+
+  /**
+   * Utility function for karatsuba multiplication method
+   * Desc - Pad array by k digits to the left
+   * @param a
+   * @param length
+   * @return
+   */
+  private static Num leftPad(Num a, int length) {
+    long[] arr = new long[a.len + length];
+    for (int i = 0; i < a.len + length; i++) {
+      if (i < length) arr[i] = 0l;
+      else arr[i] = a.arr[i - length];
+    }
+    return new Num(arr, a.base);
+  }
+
+  /**
    * https://en.wikipedia.org/wiki/Karatsuba_algorithm
    * Multiplication of two big numbers can be done in nlog2(3)
    * @param a
    * @param b
    * @return
    */
-  private static String karatsuba(long[] a, long[] b) {
-    int k = Math.max(a.length, b.length) / 2;
-
-    long[] aLow = new long[k];
-    long[] aHigh = new long[k - a.length];
-
-    long[] bLow = new long[k];
-    long[] bHigh = new long[k - b.length];
-    return null;
-  }
-
-  public static Num product(Num a, Num b) {
-    if (a.hasSameBase(b)) {
-      throw new ArithmeticException();  
+  private static Num karatsuba(Num a, Num b) {
+    if (a.len == 1 || b.len == 1) {
+      return a.len == 1 ? product(b, a.arr[0]) : product(a, b.arr[0]);
     }
-    String res = karatsuba(a.arr, b.arr);
-    System.out.println("karatsuba result -> " + res);
-    Num result = new Num(res);
-    result.isNegative = a.isNegative ^ b.isNegative;
+
+    int k = Math.max(a.len, b.len) / 2;
+
+    Num aLow = splitter(a, 0, k);
+    Num aHigh = splitter(a, k, a.len - k);
+
+    Num bLow = splitter(b, 0, k);
+    Num bHigh = splitter(b, k, b.len - k);
+
+    Num z0 = karatsuba(aLow, bLow);
+    // System.out.println("calc z1");
+    // System.out.print("aLow: "); aLow.printList();
+    // System.out.print("aHigh: "); aHigh.printList();
+    // System.out.print("bLow: "); bLow.printList();
+    // System.out.print("bHigh: "); bHigh.printList();
+    // System.out.println("add begin --->");
+    // unsignedAdd(aLow, aHigh).printList();
+    // unsignedAdd(bLow, bHigh).printList();
+    // System.out.println("add end --->");
+    Num z1 = karatsuba(unsignedAdd(aLow, aHigh), unsignedAdd(bLow, bHigh));
+
+    Num z2 = karatsuba(aHigh, bHigh);
+
+    // (z2 * 10 ^ (m2 * 2)) + ((z1 - z2 - z0) * 10 ^ m2) + z0
+    Num result = unsignedAdd(
+      unsignedAdd(
+        leftPad(z2, 2 * k), 
+        leftPad(unsignedSubtract(z1, unsignedAdd(z2, z0)), k)
+      ),
+      z0
+    );
+
+    // System.out.print("z0: "); z0.printList();
+    // System.out.print("z1: "); z1.printList();
+    // System.out.print("z2: "); z2.printList();
+    // System.out.print("Result: "); result.printList();
+
     return result;
   }
 
