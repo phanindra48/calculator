@@ -126,7 +126,24 @@ public class Num implements Comparable<Num> {
     if (this.base() != other.base()) {
       throw new ArithmeticException();
     }
+
+    if (this.isNegative && !other.isNegative) return -1;
+
+    if (!this.isNegative && other.isNegative) return 1;
     
+    return this.unsignedCompareTo(other);
+  }
+
+  /**
+   * compares just two numbers and ignores their signs
+   * @param other
+   * @return
+   */
+  private int unsignedCompareTo(Num other) {
+    if (this.base() != other.base()) {
+      throw new ArithmeticException();
+    }
+
     if (this.len > other.len) return 1;
 
     if (this.len < other.len) return -1;
