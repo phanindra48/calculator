@@ -13,16 +13,22 @@ public class Num implements Comparable<Num> {
   // arr[0..len-1]
   int count = 0;
 
+  // Frequently used values
+  private static final Num ONE = new Num(1);
+  private static final Num ZERO = new Num(0);
+
   public Num(String s) {
     int strLen = s.length();
     int index = strLen;
     int count = 0;
+    isNegative = false;
     int baseSize = baseSize(base);
     int totalChunks = (int) Math.ceil(strLen * 1.0 / baseSize);
     arr = new long[totalChunks];
     len = totalChunks;
     // System.out.println(count + " " + baseSize + " " + index + " " + totalChunks + " " + len + " " + strLen);
     System.out.println(s);
+    // TODO: Need to handle negative signs in input strings
     while (count < totalChunks) {
       int start = index / baseSize > 0 ? (index - baseSize) : 0;
       int end = index;
