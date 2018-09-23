@@ -60,7 +60,15 @@ public class Num implements Comparable<Num> {
     return str.toString().replaceFirst("^0+(?!$)", "");
   }
 
-  public static Num add(Num a, Num b) {
+  /**
+   * Irrespective of the signs, will just do addition
+   * Created only to remove duplicated code, to handle cases 
+   * where subtraction will need addition in actual
+   * @param a
+   * @param b
+   * @return Num
+   */
+  private static Num unsignedAdd(Num a, Num b) {
     int carryOver = 0;
     if (a.base != b.base) {
       System.out.println("Base of two numbers are not same");
@@ -88,15 +96,143 @@ public class Num implements Comparable<Num> {
       carryOver = sum / base;
       arr[i] = sum % base;
     }
+
+    return new Num(arrayToString(arr, base));
+  }
+
+  public static Num add(Num a, Num b) {
+    /**
+     * Perform subtraction if both number have opp sign
+     * if numbers are of opp signs, xor will give truthy
+     * and then call subtract method
+     */
+    if (a.isNegative ^ b.isNegative) {
+      Num sub = unsignedSubtract(a, b);
+      sub.isNegative = a.unsignedCompareTo(b) > 0 && a.isNegative;
+      return sub;
+    } 
+
+    Num result = unsignedAdd(a, b);
+    result.isNegative = a.isNegative;
+    return result;
+  }
+  
+  /**
+   * Irrespective of the signs, will just do subtraction
+   * Created only to remove duplicated code, to handle cases 
+   * where addition will need subtraction in actual
+   * @param a
+   * @param b
+   * @return Num
+   */
+  private static Num unsignedSubtract(Num a, Num b) {
+    int borrow = 0;
+    boolean isNegative = false;
+    if (a.base() != b.base()) {
+      System.out.println("Base of two numbers are not same");
+      return null;
+    }
+
+    int aLen = a.len;
+    int bLen = b.len;
+
+    int base = (int) a.base;
+
+    if (aLen == 0)
+      return b;
+    if (bLen == 0)
+      return a;
+
+    /**
+     * From here on, we can safely assume that two numbers are of different signs
+     */
+    
+     /**
+     * Return if they are equal, as they will result to zero
+     */
+    if (a.compareTo(b) == 0) return ZERO;
+
+    /**
+     * swap numbers if a < b
+     */
+    if (a.compareTo(b) < 0) {
+      Num temp = a;
+      a = b;
+      b = temp;
+      aLen = a.len;
+      bLen = b.len;
+    }
+
+    int arrLen = Math.max(a.len, b.len);
+    long[] arr = new long[arrLen];
+
+    for (int i = 0; i < arrLen; i++) {
+      int sub = 0;
+      if (i < aLen) {
+        sub += a.arr[i] - borrow;
+      }
+      if (i < bLen)
+        sub -= b.arr[i];
+      
+      if (sub < 0) {
+        sub += base;
+        borrow = 1;
+      } else borrow = 0;
+
+      arr[i] = sub;
+    }
+
     return new Num(arrayToString(arr, base));
   }
 
   public static Num subtract(Num a, Num b) {
+    /**
+     * If numbers are not of same sign, call add method
+     * using xor for this
+     * a(+) b(-) => a + b => add
+     * a(-) b(+) => - (a + b) => add 
+     */
+    if (a.isNegative ^ b.isNegative) {
+      // Calculate sum and then apply sign to the result
+      Num addResult = add(a, b);
+      // one of them is negative and take that sign
+      addResult.isNegative = a.isNegative || b.isNegative;
+      return addResult;
+    };
+
+    Num result = unsignedSubtract(a, b);
+    // we can safely assume that both are either postive or negative
+    result.isNegative = a.unsignedCompareTo(b) > 0 && a.isNegative;
+    return result;
+  }
+
+  /**
+   * https://en.wikipedia.org/wiki/Karatsuba_algorithm
+   * Multiplication of two big numbers can be done in nlog2(3)
+   * @param a
+   * @param b
+   * @return
+   */
+  private static String karatsuba(long[] a, long[] b) {
+    int k = Math.max(a.length, b.length) / 2;
+
+    long[] aLow = new long[k];
+    long[] aHigh = new long[k - a.length];
+
+    long[] bLow = new long[k];
+    long[] bHigh = new long[k - b.length];
     return null;
   }
 
   public static Num product(Num a, Num b) {
-    return null;
+    if (a.hasSameBase(b)) {
+      throw new ArithmeticException();  
+    }
+    String res = karatsuba(a.arr, b.arr);
+    System.out.println("karatsuba result -> " + res);
+    Num result = new Num(res);
+    result.isNegative = a.isNegative ^ b.isNegative;
+    return result;
   }
 
   // Use divide and conquer
