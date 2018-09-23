@@ -336,17 +336,7 @@ public class Num implements Comparable<Num> {
     Num bHigh = splitter(b, k, b.len - k);
 
     Num z0 = karatsuba(aLow, bLow);
-    // System.out.println("calc z1");
-    // System.out.print("aLow: "); aLow.printList();
-    // System.out.print("aHigh: "); aHigh.printList();
-    // System.out.print("bLow: "); bLow.printList();
-    // System.out.print("bHigh: "); bHigh.printList();
-    // System.out.println("add begin --->");
-    // unsignedAdd(aLow, aHigh).printList();
-    // unsignedAdd(bLow, bHigh).printList();
-    // System.out.println("add end --->");
     Num z1 = karatsuba(unsignedAdd(aLow, aHigh), unsignedAdd(bLow, bHigh));
-
     Num z2 = karatsuba(aHigh, bHigh);
 
     // (z2 * 10 ^ (m2 * 2)) + ((z1 - z2 - z0) * 10 ^ m2) + z0
@@ -357,11 +347,6 @@ public class Num implements Comparable<Num> {
       ),
       z0
     );
-
-    // System.out.print("z0: "); z0.printList();
-    // System.out.print("z1: "); z1.printList();
-    // System.out.print("z2: "); z2.printList();
-    // System.out.print("Result: "); result.printList();
 
     return result;
   }
