@@ -361,7 +361,12 @@ public class Num implements Comparable<Num> {
 
   // Use divide and conquer
   public static Num power(Num a, long n) {
-    return null;
+    if (n == 1)
+    return a;
+
+    if (n == 0) return new Num(1, a.base);
+
+    return product(a, power(a, n - 1));
   }
 
   // Use binary search to calculate a/b
