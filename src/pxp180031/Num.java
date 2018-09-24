@@ -417,6 +417,26 @@ public class Num implements Comparable<Num> {
 
   // Use binary search
   public static Num squareRoot(Num a) {
+    if (a.isNegative) throw new ArithmeticException();
+
+    Num ZERO = new Num(0, a.base);
+    Num ONE = new Num(1, a.base);
+
+    if (a.unsignedCompareTo(ZERO) == 0) return ZERO;
+
+    if (a.unsignedCompareTo(ONE) == 0) return ONE;
+
+    return binarySearchForSqareRoot(ONE, a.by2(), a);
+  }
+
+  /**
+   * Utility for finding square root using binary search
+   * @param low
+   * @param high
+   * @param a
+   * @return
+   */
+  private static Num binarySearchForSqareRoot(Num low, Num high, Num a) {
     return null;
   }
 
@@ -484,7 +504,19 @@ public class Num implements Comparable<Num> {
 
   // Return number equal to "this" number, in base=newBase
   public Num convertBase(int newBase) {
-    return null;
+    long base = this.base;
+    // int size = this.len + (int)(Math.log10(newBase) / Math.log10(base)) + 1;
+    int index = this.len - 1;
+		Num res = new Num("", newBase);
+		while (index >= 0) {
+			res = add(
+        product(res, base), 
+        new Num(this.arr[index], newBase)
+      );
+      index--;
+		}
+		res.isNegative = this.isNegative;
+		return res;
   }
 
   /**
@@ -557,6 +589,35 @@ public class Num implements Comparable<Num> {
       z.printList();
       System.out.println(z.toString());
     }
+
+    x = new Num("23242348234288");
+    x.by2().printList();
+
+
+    x = new Num("10");
+    y = new Num("5");
+    System.out.println("x/y result 22: " + Num.divide(x, y).toString());
+
+
+    x = new Num("12345674824890223483094848923");
+    y = new Num("76543434345453");
+    System.out.println(x.by2().toString());
+    System.out.println("x/y result: " + Num.divide(x, y).toString());
+
+
+    x = new Num("123456748248902384930589384958394850830485023483094848923");
+    y = new Num("76543434398493849384343908934834890583405803409093405093480834095845453");
+    long startTime = System.nanoTime();
+    z = Num.product(x, y);
+    long endTime = System.nanoTime();
+    long duration = (endTime - startTime);
+    if (z != null) {
+      System.out.print("Product(Num, Num) result: ");
+      z.printList();
+      System.out.println(z.toString());
+      System.out.println("Duration: " + duration);
+    }
+
     System.out.println("compareTo x,y " + x.compareTo(y));
   }
 }
