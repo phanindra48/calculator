@@ -47,6 +47,10 @@ public class Num implements Comparable<Num> {
     this(String.valueOf(x), defaultBase);
   }
 
+  public Num(long x, long base) {
+    this(String.valueOf(x), base);
+  }
+
   /**
    * Create Num object if we get array of long objects
    * Assumption - all elems in array are of give base
@@ -120,8 +124,14 @@ public class Num implements Comparable<Num> {
       arr[i] = sum % a.base;
     }
 
+    int length = 0;
+    for (int i = arrLen - 1; i >= 0; i--) {
+      if (arr[i] > 0) break;
+      length++;
+    }
+
     Num result = new Num(arr, a.base);
-    result.len = arr[arrLen - 1] > 0 ? arrLen : arrLen - 1;
+    result.len = arrLen - length;
     return result;
   }
 
@@ -174,7 +184,7 @@ public class Num implements Comparable<Num> {
      /**
      * Return if they are equal, as they will result to zero
      */
-    if (a.compareTo(b) == 0) return ZERO;
+    if (a.compareTo(b) == 0) return new Num(0, a.base);
 
     /**
      * swap numbers if a < b
@@ -208,7 +218,13 @@ public class Num implements Comparable<Num> {
     Num result = new Num(arr, base);
 
     // if last elem is zero, reduce the length by 1
-    result.len = arr[a.len - 1] == 0 ? a.len - 1 : a.len;
+    int length = 0;
+    for (int i = arrLen - 1; i >= 0; i--) {
+      if (arr[i] > 0) break;
+      length++;
+    }
+
+    result.len = arrLen - length;
     return result;
   }
 
@@ -241,7 +257,7 @@ public class Num implements Comparable<Num> {
    * @return
    */
   private static Num product(Num a, long b) {
-    if (b == 0) return ZERO;
+    if (b == 0) return new Num(0, a.base);
 
     if (b == 1) return a;
 
@@ -270,6 +286,7 @@ public class Num implements Comparable<Num> {
     }
     Num result = karatsuba(a, b);
     result.isNegative = a.isNegative ^ b.isNegative;
+    result.base = a.base;
     return result;
   }
 
@@ -281,22 +298,13 @@ public class Num implements Comparable<Num> {
    * @return
    */
   private static Num splitter(Num a, int index, int length) {
+    if (length < 0) return new Num(0, a.base);
+
     long[] arr = new long[length];
-    for (int i = 0; i < length; i++) {
+    for (int i = 0; i < Math.min(a.len, length); i++) {
       arr[i] = a.arr[i + index];
     }
     return new Num(arr, a.base);
-  }
-
-  /**
-   * Utility function for karatsuba multiplication method
-   * Desc - Shifts numbers by k digits to right
-   * @param a
-   * @param length
-   * @return
-   */
-  private static Num shift(Num a, int length) {
-    return null;
   }
 
   /**
@@ -325,7 +333,7 @@ public class Num implements Comparable<Num> {
   private static Num karatsuba(Num a, Num b) {
     if (a.len == 1 || b.len == 1) {
       return a.len == 1 ? product(b, a.arr[0]) : product(a, b.arr[0]);
-    }
+    } else if (a.len == 0 || b.len == 0) return new Num(0, a.base);
 
     int k = Math.max(a.len, b.len) / 2;
 
@@ -358,8 +366,49 @@ public class Num implements Comparable<Num> {
 
   // Use binary search to calculate a/b
   public static Num divide(Num a, Num b) {
-    return null;
+    if (a.base != b.base) {
+      throw new ArithmeticException();
+    }
+
+    // handle divide by zero exception 
+    if (b.len == 1 && b.arr[0] == 0) {
+      throw new IllegalArgumentException("Dividing by 0");
+    }
+
+    // if dividend is less, it will result to zero
+    if (a.unsignedCompareTo(b) < 0) return new Num(0, a.base);
+    
+    // if both are same, it results to one and choose sign accordingly
+    if (a.unsignedCompareTo(b) == 0) {
+      Num result = new Num(1);
+      result.isNegative = a.isNegative ^ b.isNegative;
+      return result;
+    }
+
+    Num low = new Num(1, a.base);
+    Num high = a;
+
+    Num result = binarySearch(low, high, a, b);
+    result.isNegative = a.isNegative ^ b.isNegative;
+    return result;
   }
+
+	private static Num binarySearch(Num low, Num high, Num x, Num y) {
+    Num mid = unsignedAdd(low, high).by2();
+		Num prod = product(mid, y);
+		Num right = unsignedAdd(prod, y);
+		int leftSide = prod.unsignedCompareTo(x);
+    int rightSide = x.unsignedCompareTo(right);
+
+    Num ONE = new Num(1, x.base);
+		if (leftSide > 0) {
+			return binarySearch(low, unsignedSubtract(mid, ONE), x, y);
+		} else if (leftSide <= 0 && rightSide < 0) {
+			return mid;
+		} else {
+			return binarySearch(unsignedAdd(mid, ONE), high, x, y);
+		}
+	}
 
   // return a%b
   public static Num mod(Num a, Num b) {
@@ -438,9 +487,19 @@ public class Num implements Comparable<Num> {
     return null;
   }
 
-  // Divide by 2, for using in binary search
-  public Num by2() {
-    return null;
+  /**
+   * Utility function for division by 2
+   * Desc - Shifts numbers by k digits to right
+   * @param a
+   * @param length
+   * @return
+   */
+  private static long[] shift(long[] a, int count) {
+    long[] shiftedArray = new long[a.length - count];
+    for (int i = 0; i < a.length - count; i++) {
+      shiftedArray[i] = a[count + i];
+    }
+    return shiftedArray;
   }
 
   // Evaluate an expression in postfix and return resulting number
@@ -455,6 +514,13 @@ public class Num implements Comparable<Num> {
   // a number: [1-9][0-9]*. There is no unary minus operator.
   public static Num evaluateInfix(String[] expr) {
     return null;
+  }
+
+  // Divide by 2, for using in binary search
+  public Num by2() {
+    Num prod = product(this, new Num(this.base / 2, this.base));
+    Num result = new Num(shift(prod.arr, 1), this.base);
+    return result;
   }
 
   public static void main(String[] args) {
