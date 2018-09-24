@@ -412,7 +412,25 @@ public class Num implements Comparable<Num> {
 
   // return a%b
   public static Num mod(Num a, Num b) {
-    return null;
+    if (a.base != b.base) {
+      throw new ArithmeticException();
+    }
+
+    Num ONE = new Num(1, a.base);
+    Num ZERO = new Num(0, a.base);
+
+    // handle all edge and trivial cases first
+    if (a.unsignedCompareTo(ZERO) <= 0) return ZERO;
+    
+    if (a.unsignedCompareTo(ONE) == 0) return ONE;
+
+    if (a.unsignedCompareTo(b) == 0) return ZERO;
+    
+    if (a.unsignedCompareTo(b) < 1) return a;
+
+    Num result = unsignedSubtract(a, product(divide(a, b), b));
+    result.isNegative = a.isNegative || b.isNegative;
+    return result;
   }
 
   // Use binary search
