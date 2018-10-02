@@ -3,9 +3,10 @@
 
 package pxp180031;
 
-public class Num implements Comparable<Num> {
+import java.util.Stack;
 
-  static long defaultBase = 100; // Change as needed
+public class Num implements Comparable<Num> {
+  static long defaultBase = 1000; // Change as needed
   long base = defaultBase; // Change as needed
   long[] arr; // array to store arbitrarily large integers
   boolean isNegative; // boolean flag to represent negative numbers
