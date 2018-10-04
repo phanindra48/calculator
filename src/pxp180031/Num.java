@@ -12,11 +12,6 @@ public class Num implements Comparable<Num> {
   boolean isNegative; // boolean flag to represent negative numbers
   int len; // actual number of elements of array that are used; number is stored in
   // arr[0..len-1]
-  int count = 0;
-
-  // Frequently used values
-  private static final Num ONE = new Num(1);
-  private static final Num ZERO = new Num(0);
 
   public Num(String s, long base) {
     this.base = base;
@@ -579,7 +574,7 @@ public class Num implements Comparable<Num> {
 
     for (int i = 0; i < len; i++) {
       String token = expr[i];
-      if (token != "+" && token != "-" && token != "*" && token != "/" && token != "^") {
+      if (token != "+" && token != "-" && token != "*" && token != "/" && token != "^" && token != "%") {
         s.push(new Num(token));
       } else {
         Num n1 = s.pop();
@@ -595,11 +590,10 @@ public class Num implements Comparable<Num> {
         } else if (operator == "/") {
           s.push(divide(n2, n1));
         } else if (operator == "%") {
-          s.push(mod(n1, n2));
+          s.push(mod(n2, n1));
         } else if (operator == "^") {
-          s.push(power(n1, n2));
+          s.push(power(n2, n1));
         }
-
       }
     }
     return s.pop();
@@ -622,7 +616,6 @@ public class Num implements Comparable<Num> {
           break;
         } else {
           while (operators.peek() != "(") {
-
             values.push((applyOperation(operators.pop(), values.pop(), values.pop())));
           }
           operators.pop();
@@ -745,6 +738,14 @@ public class Num implements Comparable<Num> {
       System.out.println("Duration: " + duration);
     }
 
+    startTime = System.nanoTime();
+    // z = Num.power(new Num(3), 999999);
+    endTime = System.nanoTime();
+    duration = (endTime - startTime);
+    System.out.println("Duration for power(3, 999999): " + duration / 1000000000.0);
+
+    z = new Num("3659535532566681673026857047264590495633096120170316011130546064934049533282760410899967541");
+    System.out.println("converted number: " + z.convertBase(87654321));
     System.out.println("compareTo x,y " + x.compareTo(y));
   }
 }
