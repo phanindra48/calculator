@@ -377,6 +377,11 @@ public class Num implements Comparable<Num> {
     return product(a, power(a, n - 1));
   }
 
+  public static Num power(Num a, Num b) {
+    System.out.println(arrayToString(b.arr, 10, b.isNegative));
+    return power(a, Long.parseLong(arrayToString(b.arr, 10, b.isNegative)));
+  }
+
   // Use binary search to calculate a/b
   public static Num divide(Num a, Num b) {
     if (a.base != b.base) {
@@ -574,7 +579,7 @@ public class Num implements Comparable<Num> {
 
     for (int i = 0; i < len; i++) {
       String token = expr[i];
-      if (token != "+" && token != "-" && token != "*" && token != "/") {
+      if (token != "+" && token != "-" && token != "*" && token != "/" && token != "^") {
         s.push(new Num(token));
       } else {
         Num n1 = s.pop();
@@ -592,7 +597,7 @@ public class Num implements Comparable<Num> {
         } else if (operator == "%") {
           s.push(mod(n1, n2));
         } else if (operator == "^") {
-          s.push(power(n1, Long.parseLong(arrayToString(n2.arr, 10, false))));
+          s.push(power(n1, n2));
         }
 
       }
@@ -651,23 +656,19 @@ public class Num implements Comparable<Num> {
     case "%":
       return mod(num1, num2);
     case "^":
-      return power(num1, Long.parseLong(arrayToString(num2.arr, 10, false)));
+      return power(num1, num2);
     }
 
     return null;
   }
 
   private static boolean hasPrecedence(String op1, String op2) {
-    // TODO Auto-generated method stub
-    {
       if (op2 == "(" || op2 == ")")
         return false;
       if ((op1 == "^" || op1 == "*" || op1 == "/" || op1 == "%") && (op2 == "+" || op2 == "-"))
         return false;
       else
         return true;
-    }
-
   }
 
   // Divide by 2, for using in binary search
