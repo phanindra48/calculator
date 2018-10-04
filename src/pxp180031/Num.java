@@ -34,10 +34,6 @@ public class Num implements Comparable<Num> {
     int totalChunks = (int) Math.ceil(index * 1.0 / baseSize);
     arr = new long[totalChunks];
     len = totalChunks;
-    // System.out.println(count + " " + baseSize + " " + index + " " + totalChunks + " " + len + " " + strLen);
-    //System.out.println(s);
-   
-    //System.out.println("totalChunks "+totalChunks);
     while (count < totalChunks) {
       int start = index / baseSize > 0 ? (index - baseSize) : 0;
       int end = index;
@@ -593,9 +589,13 @@ public class Num implements Comparable<Num> {
           s.push(product(n1, n2));
         } else if (operator == "/") {
           s.push(divide(n2, n1));
+        } else if (operator == "%") {
+          s.push(mod(n1, n2));
+        } else if (operator == "^") {
+          s.push(power(n1, Long.parseLong(arrayToString(n2.arr, 10, false))));
         }
-      }
 
+      }
     }
     return s.pop();
   }
@@ -604,76 +604,71 @@ public class Num implements Comparable<Num> {
   // Each string is one of: "*", "+", "-", "/", "%", "^", "(", ")", "0", or
   // a number: [1-9][0-9]*. There is no unary minus operator.
   public static Num evaluateInfix(String[] expr) {
-		Stack<Num> values = new Stack<Num>();
-		char ch;
-		Stack<String> operators = new Stack<String>();
-		for(int i=0;i<expr.length;i++) {
-			if(expr[i].matches("\\d+.*")) {
-				values.push(new Num(expr[i]));
-			}
-			else if(expr[i] == "(") {
-				operators.push((expr[i]));
-			}
-			else if(expr[i] == ")") {
-				if(operators.size() == 0) {
-					break;
-				}
-				else {
-					while(operators.peek() != "(" ) {
-						
-						values.push((applyOperation(operators.pop(),values.pop(),values.pop())));	
-					}
-					operators.pop();
-				}
+    Stack<Num> values = new Stack<Num>();
+    char ch;
+    Stack<String> operators = new Stack<String>();
+    for (int i = 0; i < expr.length; i++) {
+      if (expr[i].matches("\\d+.*")) {
+        values.push(new Num(expr[i]));
+      } else if (expr[i] == "(") {
+        operators.push((expr[i]));
+      } else if (expr[i] == ")") {
+        if (operators.size() == 0) {
+          break;
+        } else {
+          while (operators.peek() != "(") {
 
-			}
+            values.push((applyOperation(operators.pop(), values.pop(), values.pop())));
+          }
+          operators.pop();
+        }
 
-			else { //current token is an operator
-				while(!operators.empty() && hasPrecedence(expr[i],operators.peek())) {
-					values.push((applyOperation(operators.pop(),values.pop(),values.pop())));
-				}
-				operators.push(expr[i]);
-			}
-		}
-		while(!operators.empty()) {
-			values.push((applyOperation(operators.pop(),values.pop(),values.pop())));
-		} 
-		return values.pop();
-	}
-  
+      }
+
+      else { // current token is an operator
+        while (!operators.empty() && hasPrecedence(expr[i], operators.peek())) {
+          values.push((applyOperation(operators.pop(), values.pop(), values.pop())));
+        }
+        operators.push(expr[i]);
+      }
+    }
+    while (!operators.empty()) {
+      values.push((applyOperation(operators.pop(), values.pop(), values.pop())));
+    }
+    return values.pop();
+  }
+
   private static Num applyOperation(String op, Num num2, Num num1) {
-		// TODO Auto-generated method stub
-		{ 
-			switch (op) 
-			{ 
-			case "+": 
-				return add(num1,num2); 
-			case "-": 
-				return subtract(num1, num2); 
-			case "*": 
-				return product(num1, num2); 
-			case "/":  
-				return divide(num1, num2);
-			case "%":
-				return mod(num1, num2);
-			case "^":
-				return power(num1, Long.parseLong(arrayToString(num2.arr, 10, false)));
-			} 
-			return null;
-		}
-	}
-	private static boolean hasPrecedence(String op1, String op2) {
-		// TODO Auto-generated method stub
-		{ 
-			if (op2 == "(" || op2 == ")") 
-				return false; 
-			if ((op1 == "^" || op1 == "*" || op1 == "/" || op1 == "%") && (op2 == "+" || op2 == "-")) 
-				return false; 
-			else
-				return true; 
-		} 
+    switch (op) {
+    case "+":
+      return add(num1, num2);
+    case "-":
+      return subtract(num1, num2);
+    case "*":
+      return product(num1, num2);
+    case "/":
+      return divide(num1, num2);
+    case "%":
+      return mod(num1, num2);
+    case "^":
+      return power(num1, Long.parseLong(arrayToString(num2.arr, 10, false)));
+    }
 
-	}
+    return null;
+  }
+
+  private static boolean hasPrecedence(String op1, String op2) {
+    // TODO Auto-generated method stub
+    {
+      if (op2 == "(" || op2 == ")")
+        return false;
+      if ((op1 == "^" || op1 == "*" || op1 == "/" || op1 == "%") && (op2 == "+" || op2 == "-"))
+        return false;
+      else
+        return true;
+    }
+
+  }
 
   // Divide by 2, for using in binary search
   public Num by2() {
