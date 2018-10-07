@@ -50,9 +50,10 @@ public class Num implements Comparable<Num> {
   /**
    * Basic constructor with empty array and all the defaults
    */
-  public Num(long[] arr, int len) {
+  public Num(long[] arr, int len, long base) {
     this.arr = arr;
     this.len = len;
+    this.base = base;
   }
 
   public Num(long x, long base) {
