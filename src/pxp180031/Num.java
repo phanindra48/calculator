@@ -329,6 +329,7 @@ public class Num implements Comparable<Num> {
     }
     if (carryOver > 0)
       arr[count] = carryOver;
+    
     Num result = new Num(arr, a.base);
     result.isNegative = a.isNegative;
     result.len = carryOver > 0 ? a.len + 1 : a.len;
@@ -599,7 +600,7 @@ public class Num implements Comparable<Num> {
   // For example, if base=100, and the number stored corresponds to 10965,
   // then the output is "100: 65 9 1"
   public void printList() {
-    System.out.print(base + ": ");
+    System.out.print(this.base + ": ");
     if (this.isNegative)
       System.out.println("-");
     for (int i = 0, len = this.len; i < len; i++) {
@@ -610,8 +611,7 @@ public class Num implements Comparable<Num> {
 
   // Return number to a string in base 10
   public String toString() {
-    if (this.arr.length == 0) return null;
-    
+    if (this.len == 0) return null;
     Num numInBase10 = this.convertBase(10);
     String value = null;
     StringBuilder str = new StringBuilder();
@@ -621,7 +621,7 @@ public class Num implements Comparable<Num> {
     for (int i = 0; i < len; i++) {
       str.insert(0, String.format("%01d", arr[i]));
     }
-
+    
     value = str.toString().replaceFirst("^0+(?!$)", "");
     if (this.isNegative) {
       value = "-" + value;
@@ -647,7 +647,7 @@ public class Num implements Comparable<Num> {
         new Num(this.arr[i], newBase)
       );
     }
-    this.base = newBase;
+    number.base = newBase;
     number.isNegative = this.isNegative;
     return number;
   }
@@ -687,11 +687,11 @@ public class Num implements Comparable<Num> {
         String operator = expr[i];
 
         if (operator == "+") {
-          s.push(add(n1, n2));
+          s.push(add(n2, n1));
         } else if (operator == "-") {
           s.push(subtract(n2, n1));
         } else if (operator == "*") {
-          s.push(product(n1, n2));
+          s.push(product(n2, n1));
         } else if (operator == "/") {
           s.push(divide(n2, n1));
         } else if (operator == "%") {
