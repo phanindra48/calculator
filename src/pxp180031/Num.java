@@ -327,12 +327,13 @@ public class Num implements Comparable<Num> {
       carryOver = sum / a.base;
       count++;
     }
-    if (carryOver > 0)
+    if (carryOver > 0) {
       arr[count] = carryOver;
-    
+      count++;
+    }
     Num result = new Num(arr, a.base);
     result.isNegative = a.isNegative;
-    result.len = carryOver > 0 ? a.len + 1 : a.len;
+    result.len = count;
     return result;
   }
 
@@ -546,7 +547,27 @@ public class Num implements Comparable<Num> {
    * @return
    */
   private static Num binarySearchForSqareRoot(Num low, Num high, Num a) {
-    return null;
+    Num start, answer = null, end, mid = null;
+    start = low;
+    Num ONE = new Num(1, a.base);
+    Num ZERO = new Num(0, a.base);
+    end = high;
+    if (end.compareTo(ZERO) == 0 || end.compareTo(ONE) == 0) {
+      return end;
+    }
+    while (start.compareTo(end) == -1 || start.compareTo(end) == 0) {
+      mid = add(start, end).by2();
+      if (product(mid, mid).compareTo(a) == 0) {
+        return mid;
+      }
+      if (product(mid, mid).compareTo(a) == -1) {
+        start = add(mid, ONE);
+        answer = mid;
+      } else {
+        end = subtract(mid, ONE);
+      }
+    }
+    return answer;
   }
 
   // Utility functions
@@ -680,7 +701,7 @@ public class Num implements Comparable<Num> {
     for (int i = 0; i < len; i++) {
       String token = expr[i];
       if (token != "+" && token != "-" && token != "*" && token != "/" && token != "^" && token != "%") {
-        s.push(new Num(token));
+        s.push(new Num(token, 10));
       } else {
         Num n1 = s.pop();
         Num n2 = s.pop();

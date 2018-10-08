@@ -14,7 +14,7 @@ package pxp180031;
 
 public class TestLP1 {
 	public static void main(String[] args) throws Exception {
-		int val = 7;
+		int val = 1;
 		if (args.length > 0) {
 			val = Integer.parseInt(args[0]);
 		}
