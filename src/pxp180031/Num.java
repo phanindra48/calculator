@@ -7,7 +7,7 @@ import java.util.Stack;
 import java.lang.ArithmeticException;
 
 public class Num implements Comparable<Num> {
-  static long defaultBase = 1000; // Change as needed
+  static long defaultBase = 1000000000; // Change as needed
   long base = defaultBase; // Change as needed
   long[] arr; // array to store arbitrarily large integers
   boolean isNegative; // boolean flag to represent negative numbers
@@ -16,21 +16,17 @@ public class Num implements Comparable<Num> {
 
   public Num(String s, long base) {
     this.base = base;
-    int strLen = s.length();
-    int index = strLen;
-    int baseSize = baseSize(base);
-    if (baseSize == 0)
-      baseSize = 1;
+
     if (s.charAt(0) == '-') {
       isNegative = true;
-      s = s.substring(1, index);
+      s = s.substring(1);
     }
 
     Num initNum = new Num(0, base);
     for (int i = 0, l = s.length(); i < l; i++) {
       // multiple existing result with 10 and add the new digit =
       initNum = add(
-        product(initNum, 10),
+        product(initNum, base),
         new Num(Long.parseLong(String.valueOf(s.charAt(i))), base)
       );
     }
@@ -67,8 +63,7 @@ public class Num implements Comparable<Num> {
       this.arr = new long[]{ 0 };
       this.len = 1;
     } else {
-      int size = baseSize(num, base); // total numbers when converted to a given base
-      // System.out.println(num + " " + base + " " + size);
+      int size = baseRatio(num, base); // total numbers when converted to a given base
       long[] nums = new long[size];
       int len = 0;
       while (num > 0) {
@@ -94,48 +89,15 @@ public class Num implements Comparable<Num> {
     this.base = base;
   }
 
-  private static int baseSize(long base) {
-    int intBase = (int) base;
-    int baseSize = (int) Math.log10(intBase);
-    return baseSize;
-  }
+  // private static int baseSize(long base) {
+  //   int intBase = (int) base;
+  //   int baseSize = (int) Math.log10(intBase);
+  //   return baseSize;
+  // }
 
-  private static int baseSize(long num, long base) {
-    int baseSize = (int) Math.ceil(Math.log10(num) / Math.log10(base)) + 1;
-    return baseSize;
-  }
-
-  /**
-   * TODO: See if this can be removed!
-   * @param arr
-   * @param base
-   * @return
-   */
-  private static String arrayToString(long[] arr, long base) {
-    if (arr.length == 0)
-      return null;
-    String value = null;
-    StringBuilder str = new StringBuilder();
-    int baseSize = baseSize(base);
-
-    Num res = new Num(base);
-    Num basePower = new Num(1);
-    if (base != defaultBase) {
-      for (int i = 0, len = arr.length; i < len; i++) {
-        String s = String.valueOf(arr[i]);
-        Num n = new Num(s);
-        Num prod = product(n, basePower);
-        res = unsignedAdd(res, prod);
-        basePower = product(basePower, base);
-      }
-      arr = res.arr;
-    }
-
-    for (int i = 0, len = arr.length; i < len; i++) {
-      str.insert(0, String.format("%0" + baseSize + "d", arr[i]));
-    }
-    value = str.toString().replaceFirst("^0+(?!$)", "");
-    return value;
+  private static int baseRatio(long num, long base) {
+    int baseRatio = (int) Math.ceil(Math.log10(num) / Math.log10(base)) + 1;
+    return baseRatio;
   }
 
   /**
@@ -320,17 +282,15 @@ public class Num implements Comparable<Num> {
     int count = 0;
 
     long carryOver = 0;
-    long[] arr = new long[a.len + 1];
-    while (count < a.len) {
-      long sum = a.arr[count] * b + carryOver;
+    int ratio = baseRatio(b, a.base);
+    long[] arr = new long[a.len * ratio];
+    while (count < a.len || carryOver > 0) {
+      long sum = (count < a.len ? a.arr[count] : 0) * b + carryOver;
       arr[count] = sum % a.base;
       carryOver = sum / a.base;
       count++;
     }
-    if (carryOver > 0) {
-      arr[count] = carryOver;
-      count++;
-    }
+
     Num result = new Num(arr, a.base);
     result.isNegative = a.isNegative;
     result.len = count;
@@ -464,7 +424,7 @@ public class Num implements Comparable<Num> {
 
     // if both are same, it results to one and choose sign accordingly
     if (a.unsignedCompareTo(b) == 0) {
-      Num result = new Num(1);
+      Num result = new Num(1, b.base);
       result.isNegative = a.isNegative ^ b.isNegative;
       return result;
     }
