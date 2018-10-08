@@ -7,7 +7,7 @@ import java.util.Stack;
 import java.lang.ArithmeticException;
 
 public class Num implements Comparable<Num> {
-  static long defaultBase = 1000000000; // Change as needed
+  static long defaultBase = 1234567890; // Change as needed
   long base = defaultBase; // Change as needed
   long[] arr; // array to store arbitrarily large integers
   boolean isNegative; // boolean flag to represent negative numbers
@@ -88,13 +88,7 @@ public class Num implements Comparable<Num> {
     this.len = arr.length;
     this.base = base;
   }
-
-  // private static int baseSize(long base) {
-  //   int intBase = (int) base;
-  //   int baseSize = (int) Math.log10(intBase);
-  //   return baseSize;
-  // }
-
+  
   private static int baseRatio(long num, long base) {
     int baseRatio = (int) Math.ceil(Math.log10(num) / Math.log10(base)) + 1;
     return baseRatio;
@@ -621,7 +615,7 @@ public class Num implements Comparable<Num> {
       return this;
     
     Num number = new Num(0, newBase);
-
+    // System.out.println("convertBase: " + this.len + " base: " + this.base);
     for (int i = this.len - 1; i >= 0; i--) {
       number = add(
         product(number, this.base),
